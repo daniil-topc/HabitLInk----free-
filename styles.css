@@ -60,8 +60,7 @@ button {
 .screen[data-screen="profile"],
 .screen[data-screen="achievements"],
 .screen[data-screen="notifications"],
-.screen[data-screen="settings"],
-.screen[data-screen="friends"] {
+.screen[data-screen="settings"] {
   overflow: auto;
   padding-bottom: 120px;
   scrollbar-width: none;
@@ -70,8 +69,7 @@ button {
 .screen[data-screen="profile"]::-webkit-scrollbar,
 .screen[data-screen="achievements"]::-webkit-scrollbar,
 .screen[data-screen="notifications"]::-webkit-scrollbar,
-.screen[data-screen="settings"]::-webkit-scrollbar,
-.screen[data-screen="friends"]::-webkit-scrollbar {
+.screen[data-screen="settings"]::-webkit-scrollbar {
   display: none;
 }
 
@@ -100,6 +98,12 @@ h1 {
   grid-template-columns: 1fr auto auto;
   gap: 12px;
   align-items: center;
+  margin-bottom: 28px;
+}
+
+.title-row h1 {
+  margin: 0;
+  line-height: 1;
 }
 
 .pill, .icon-button, .dots-button, .avatar-button, .back-button {
@@ -227,6 +231,13 @@ h1 {
   background: color-mix(in srgb, var(--habit-color) 72%, #fff);
 }
 
+.week-dashes span.done-day {
+  background: #f7f7ec;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.28),
+    0 0 18px color-mix(in srgb, var(--habit-color) 45%, #ffffff);
+}
+
 .streak {
   color: rgba(255,255,255,.52);
   font-size: 22px;
@@ -260,7 +271,7 @@ h1 {
 }
 
 .empty-state h2 { font-size: 31px; margin-bottom: 12px; }
-.empty-state p, .friend-hero p { color: var(--muted); font-size: 20px; line-height: 1.25; }
+.empty-state p, .progress-hero p { color: var(--muted); font-size: 20px; line-height: 1.25; }
 
 .tabbar {
   position: fixed;
@@ -488,7 +499,7 @@ h1 {
 .badge.unlocked .badge-icon { filter: saturate(1) brightness(1); }
 .badge small { font-size: 18px; }
 
-.friend-hero {
+.progress-hero {
   min-height: 520px;
   display: grid;
   align-content: center;
@@ -496,27 +507,35 @@ h1 {
   text-align: center;
 }
 
-.friend-hero h2 {
-  margin: 52px 0 18px;
+.progress-hero h2 {
+  margin: 34px 0 18px;
   font-size: clamp(38px, 11vw, 54px);
   line-height: 1.05;
 }
 
-.friend-hero p { max-width: 390px; font-weight: 800; }
+.progress-hero p { max-width: 390px; font-weight: 800; }
 
-.bubble {
-  width: 178px;
-  height: 178px;
-  display: grid;
-  place-items: center;
+.progress-orbit {
+  position: relative;
+  width: 176px;
+  height: 176px;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 28%, #555, #272727);
-  font-size: 84px;
+  background: radial-gradient(circle at 50% 46%, rgba(247,247,236,.18), rgba(255,255,255,.04) 42%, transparent 68%);
 }
 
-.bubble-one { transform: translateX(-64px); }
-.bubble-two { margin-top: -138px; transform: translateX(64px); }
+.progress-orbit span {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f7f7ec;
+  box-shadow: 0 0 24px rgba(247,247,236,.42);
+}
+
+.progress-orbit span:nth-child(1) { left: 50%; top: 20px; transform: translateX(-50%); }
+.progress-orbit span:nth-child(2) { right: 28px; bottom: 38px; }
+.progress-orbit span:nth-child(3) { left: 30px; bottom: 42px; }
 
 .feed-list {
   display: grid;
@@ -717,6 +736,16 @@ h1 {
   background: transparent;
 }
 
+.danger-button {
+  min-height: 58px;
+  border: 1px solid rgba(185,91,99,.28);
+  border-radius: 18px;
+  padding: 0 18px;
+  color: var(--danger);
+  background: rgba(185,91,99,.08);
+  font-weight: 900;
+}
+
 .modal {
   width: min(420px, calc(100vw - 28px));
   max-height: min(760px, calc(100svh - 28px));
@@ -733,7 +762,8 @@ h1 {
 }
 
 .modal form { display: grid; gap: 18px; }
-.modal header, .modal footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.modal header, .modal footer { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+.modal footer .danger-button { margin-right: auto; }
 .modal header h2 { margin: 0; font-size: 28px; }
 .modal header button {
   width: 38px;
@@ -816,7 +846,8 @@ h1 {
   .profile-header, .sub-header { padding-top: 38px; }
   .date-label { margin-bottom: 6px; font-size: 14px; }
   h1 { margin-bottom: 18px; font-size: clamp(38px, 12vw, 48px); }
-  .title-row { gap: 8px; }
+  .title-row { gap: 8px; margin-bottom: 18px; }
+  .title-row h1 { margin: 0; }
   .premium { min-width: 88px; height: 42px; font-size: 15px; }
   .icon-button { width: 44px; height: 44px; font-size: 30px; }
   .habit-list {
@@ -876,6 +907,16 @@ h1 {
     padding: 14px;
   }
   .modal form { gap: 12px; }
+  .modal footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .modal footer .danger-button {
+    grid-column: 1 / -1;
+    order: 3;
+    margin: 0;
+  }
   .modal header h2 { font-size: 23px; }
   .modal input, .modal select { padding: 11px 12px; }
   .weekday-grid, .color-grid { gap: 5px; }
@@ -885,6 +926,7 @@ h1 {
 @media (max-height: 680px) {
   .topbar { padding-top: 18px; }
   h1 { margin-bottom: 14px; font-size: 40px; }
+  .title-row { margin-bottom: 14px; }
   .habit-list { max-height: calc(100svh - 168px); }
   .habit-card {
     min-height: 138px;

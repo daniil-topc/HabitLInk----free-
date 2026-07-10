@@ -37,9 +37,12 @@
         <p class="date-label" id="feedDateLabel"></p>
         <h1>Лента</h1>
       </header>
-      <section class="friend-hero">
-        <div class="bubble bubble-one">👩🏻‍🦱</div>
-        <div class="bubble bubble-two">👨🏻‍💼</div>
+      <section class="progress-hero">
+        <div class="progress-orbit">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
         <h2>Ваш прогресс</h2>
         <p>Здесь появляются выполненные привычки и личные события.</p>
       </section>
@@ -56,22 +59,19 @@
         <div class="premium-badge">FREE</div>
         <div class="premium-copy">
           <div class="chain-icon">∞</div>
-          <h2>Стройте привычки вместе</h2>
-          <p>∞ Привычки и друзья&nbsp;&nbsp;⌁ Цвета</p>
-          <p>✣ Иконки&nbsp;&nbsp;♛ Челленджи</p>
+          <h2>Стройте привычки спокойно</h2>
+          <p>∞ Привычки&nbsp;&nbsp;⌁ Цвета</p>
+          <p>✣ Иконки&nbsp;&nbsp;♛ Достижения</p>
         </div>
         <div class="stacked-faces">
-          <span>👨🏻‍💼</span>
-          <span>👩🏻</span>
+          <span>✓</span>
+          <span>∞</span>
           <span>✦</span>
         </div>
       </section>
       <section class="profile-list">
         <button class="profile-row" type="button" data-route="achievements">
           <span>🏆</span><strong>Достижения</strong><small id="achievementPreview"></small>
-        </button>
-        <button class="profile-row" type="button" data-route="friends">
-          <span>👥</span><strong>Друзья</strong><b>›</b>
         </button>
         <button class="profile-row" type="button" data-route="notifications">
           <span>🔔</span><strong>Уведомления</strong><b>›</b>
@@ -119,9 +119,9 @@
         </label>
         <label class="toggle-row">
           <span>👥</span>
-          <strong>Прогресс друзей</strong>
-          <small>События в ленте</small>
-          <input id="notifyFriends" type="checkbox">
+          <strong>Личная активность</strong>
+          <small>Выполненные привычки и серии</small>
+          <input id="notifyActivity" type="checkbox">
         </label>
       </section>
     </main>
@@ -165,20 +165,6 @@
       </section>
     </main>
 
-    <main class="screen sub-screen" data-screen="friends">
-      <header class="sub-header">
-        <button class="back-button" data-route="profile" type="button">‹</button>
-        <h1>Друзья</h1>
-      </header>
-      <section class="friend-hero friend-page">
-        <div class="bubble bubble-one">👩🏻‍🦱</div>
-        <div class="bubble bubble-two">👨🏻‍💼</div>
-        <h2>Пригласите своих друзей</h2>
-        <p>Пока это личная версия, ссылка копирует приглашение для будущей синхронизации.</p>
-        <button class="primary-button" type="button" data-action="invite">✈ Пригласить друга</button>
-      </section>
-    </main>
-
     <nav class="tabbar" aria-label="Главная навигация">
       <button class="tab active" data-route="home" type="button">
         <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -190,10 +176,12 @@
       </button>
       <button class="tab" data-route="feed" type="button">
         <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
-          <path d="M16.5 10a3.2 3.2 0 1 0 0-6.4"/>
-          <path d="M2.5 21v-1.6c0-3 2.4-5.4 5.5-5.4s5.5 2.4 5.5 5.4V21"/>
-          <path d="M15.4 14.3c2.8.4 4.6 2.4 4.6 5V21"/>
+          <path d="M5 6.5h14"/>
+          <path d="M5 12h14"/>
+          <path d="M5 17.5h9"/>
+          <path d="M3 6.5h.01"/>
+          <path d="M3 12h.01"/>
+          <path d="M3 17.5h.01"/>
         </svg>
         <strong>Лента</strong>
       </button>
@@ -236,6 +224,7 @@
       </fieldset>
       <label>Напоминание<input id="habitTime" type="time"></label>
       <footer>
+        <button class="danger-button" id="deleteHabitButton" value="delete" type="button" data-action="delete-habit">Удалить</button>
         <button class="ghost-button" value="cancel" type="button" data-action="close-habit">Отмена</button>
         <button class="primary-button" value="save" type="submit">Сохранить</button>
       </footer>

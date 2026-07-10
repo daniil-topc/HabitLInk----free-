@@ -19,7 +19,7 @@ const defaultState = {
     weekStart: "monday",
     privateMode: false,
     notifyGeneral: true,
-    notifyFriends: true,
+    notifyActivity: true,
     appIcon: "∞"
   },
   habits: [],
@@ -159,12 +159,12 @@ function bindEvents() {
     if (action === "open-premium") showToast("В этой версии всё бесплатно.");
     if (action === "export-data") exportData();
     if (action === "reset-data") resetData();
-    if (action === "invite") inviteFriend();
+    if (action === "delete-habit") deleteHabit();
   });
 
   $("#habitForm").addEventListener("submit", handleHabitSubmit);
   $("#notifyGeneral").addEventListener("change", event => updateSetting("notifyGeneral", event.target.checked));
-  $("#notifyFriends").addEventListener("change", event => updateSetting("notifyFriends", event.target.checked));
+  $("#notifyActivity").addEventListener("change", event => updateSetting("notifyActivity", event.target.checked));
   $("#privateMode").addEventListener("change", event => updateSetting("privateMode", event.target.checked));
   $("#importFile").addEventListener("change", importData);
 
@@ -215,7 +215,7 @@ function renderHome() {
       <h2>${escapeHtml(habit.name)}</h2>
       <p>${habit.days.map(day => dayNames[day]).join(", ") || "Каждый день"}</p>
       <div class="habit-bottom">
-        <div class="week-dashes">${weekOrder().map(day => `<span class="${habit.days.includes(day) ? "active" : ""}"></span>`).join("")}</div>
+        <div class="week-dashes">${weekOrder().map(day => `<span class="${weekDashClass(habit, day, doneToday)}"></span>`).join("")}</div>
         <div class="streak">🔥 ${habitStreak(habit)}</div>
       </div>
     `;
@@ -273,7 +273,7 @@ function renderAchievements() {
 
 function renderSettings() {
   $("#notifyGeneral").checked = state.settings.notifyGeneral;
-  $("#notifyFriends").checked = state.settings.notifyFriends;
+  $("#notifyActivity").checked = state.settings.notifyActivity;
   $("#privateMode").checked = state.settings.privateMode;
   $("#mondayFirst").classList.toggle("active", state.settings.weekStart === "monday");
   $("#sundayFirst").classList.toggle("active", state.settings.weekStart === "sunday");
@@ -296,10 +296,18 @@ function openHabitDialog(id) {
   $("#habitName").value = habit?.name || "";
   $("#habitIcon").value = habit?.icon || "✱";
   $("#habitTime").value = habit?.time || "";
+  $("#deleteHabitButton").hidden = !habit;
   selectedDays = habit ? [...habit.days] : [1, 2, 3, 4, 5];
   selectedColor = habit?.color || colors[0];
   renderPickers();
   $("#habitDialog").showModal();
+}
+
+function weekDashClass(habit, day, doneToday) {
+  const classes = [];
+  if (habit.days.includes(day)) classes.push("active");
+  if (doneToday && day === today.getDay()) classes.push("done-day");
+  return classes.join(" ");
 }
 
 function handleHabitSubmit(event) {
@@ -416,14 +424,20 @@ function resetData() {
   showToast("Данные очищены.");
 }
 
-async function inviteFriend() {
-  const text = "Присоединяйся к моему HabitLink: личному трекеру привычек.";
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast("Приглашение скопировано.");
-  } catch {
-    showToast(text);
-  }
+function deleteHabit() {
+  const id = $("#habitId").value;
+  const habit = state.habits.find(item => item.id === id);
+  if (!habit) return;
+  if (!confirm(`Удалить привычку «${habit.name}»?`)) return;
+  state.habits = state.habits.filter(item => item.id !== id);
+  state.feed.unshift({
+    title: `${habit.icon} ${habit.name} удалена`,
+    time: new Date().toLocaleString("ru-RU", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })
+  });
+  saveState();
+  $("#habitDialog").close();
+  render();
+  showToast("Привычка удалена.");
 }
 
 function showToast(message) {

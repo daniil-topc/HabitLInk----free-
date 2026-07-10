@@ -193,13 +193,18 @@ function renderHome() {
 
   const habitsToShow = todaysHabits.length ? todaysHabits : state.habits;
   habitsToShow.forEach(habit => {
+    const doneToday = isDoneToday(habit);
     const card = document.createElement("article");
-    card.className = "habit-card";
+    card.className = `habit-card ${doneToday ? "done-today" : ""}`;
     card.style.setProperty("--habit-color", habit.color);
     card.innerHTML = `
       <div class="habit-top">
         <div class="habit-icon">${escapeHtml(habit.icon)}</div>
-        <button class="done-button ${isDoneToday(habit) ? "done" : ""}" type="button" aria-label="Отметить">${isDoneToday(habit) ? "✓" : "⌄"}</button>
+        <button class="done-button ${doneToday ? "done" : ""}" type="button" aria-label="Отметить">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12.5 10 17l9-10"/>
+          </svg>
+        </button>
       </div>
       <h2>${escapeHtml(habit.name)}</h2>
       <p>${habit.days.map(day => dayNames[day]).join(", ") || "Каждый день"}</p>

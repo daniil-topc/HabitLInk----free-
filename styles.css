@@ -139,14 +139,31 @@ h1 {
   height: 42px;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 50%;
-  color: color-mix(in srgb, var(--habit-color) 50%, #fff);
-  background: rgba(255,255,255,.07);
-  font-size: 22px;
+  display: grid;
+  place-items: center;
+  color: rgba(255,255,255,.42);
+  background: rgba(255,255,255,.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
 }
 
 .done-button.done {
   background: color-mix(in srgb, var(--habit-color) 55%, #ffffff);
   color: #111;
+}
+
+.done-button svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .55;
+}
+
+.done-button.done svg {
+  opacity: 1;
 }
 
 .habit-card h2 {
@@ -189,6 +206,12 @@ h1 {
   color: rgba(255,255,255,.52);
   font-size: 22px;
   font-weight: 900;
+  transition: color .2s ease, text-shadow .2s ease;
+}
+
+.habit-card.done-today .streak {
+  color: color-mix(in srgb, var(--habit-color) 30%, #ffffff);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--habit-color) 50%, transparent);
 }
 
 .empty-state {
@@ -244,7 +267,16 @@ h1 {
 }
 
 .tab.active { background: #49494a; }
-.tab span { font-size: 26px; height: 30px; }
+.tab-icon {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .92;
+}
 .tab strong { font-size: 15px; }
 
 .profile-header {

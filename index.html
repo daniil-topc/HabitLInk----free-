@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HabitLink">
+  <title>HabitLink</title>
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <main class="screen active" data-screen="home">
+      <header class="topbar">
+        <p class="date-label" id="todayLabel"></p>
+        <div class="title-row">
+          <h1>Главная</h1>
+          <button class="pill premium" data-action="open-premium" type="button">FREE</button>
+          <button class="icon-button" data-action="open-habit" type="button" aria-label="Добавить привычку">+</button>
+        </div>
+      </header>
+      <section class="habit-list" id="habitList"></section>
+      <section class="empty-state" id="emptyHome">
+        <div class="empty-mark">+</div>
+        <h2>Добавьте первую привычку</h2>
+        <p>Выберите дни, цвет и цель. Данные останутся только на вашем устройстве.</p>
+        <button class="primary-button" data-action="open-habit" type="button">Создать привычку</button>
+      </section>
+    </main>
+
+    <main class="screen" data-screen="feed">
+      <header class="topbar">
+        <p class="date-label" id="feedDateLabel"></p>
+        <h1>Лента</h1>
+      </header>
+      <section class="friend-hero">
+        <div class="bubble bubble-one">👩🏻‍🦱</div>
+        <div class="bubble bubble-two">👨🏻‍💼</div>
+        <h2>Ваш прогресс</h2>
+        <p>Здесь появляются выполненные привычки и личные события.</p>
+      </section>
+      <section class="feed-list" id="feedList"></section>
+    </main>
+
+    <main class="screen" data-screen="profile">
+      <header class="profile-header">
+        <button class="avatar-button" type="button" data-action="edit-quote" aria-label="Изменить цитату">🦁</button>
+        <button class="name-button" type="button" data-action="edit-quote"><span id="profileQuote">маленькими шагами</span> ›</button>
+        <button class="dots-button" type="button" data-action="open-menu" aria-label="Меню">•••</button>
+      </header>
+      <section class="premium-card">
+        <div class="premium-badge">FREE</div>
+        <div class="premium-copy">
+          <div class="chain-icon">∞</div>
+          <h2>Стройте привычки вместе</h2>
+          <p>∞ Привычки и друзья&nbsp;&nbsp;⌁ Цвета</p>
+          <p>✣ Иконки&nbsp;&nbsp;♛ Челленджи</p>
+        </div>
+        <div class="stacked-faces">
+          <span>👨🏻‍💼</span>
+          <span>👩🏻</span>
+          <span>✦</span>
+        </div>
+      </section>
+      <section class="profile-list">
+        <button class="profile-row" type="button" data-route="achievements">
+          <span>🏆</span><strong>Достижения</strong><small id="achievementPreview"></small>
+        </button>
+        <button class="profile-row" type="button" data-route="friends">
+          <span>👥</span><strong>Друзья</strong><b>›</b>
+        </button>
+        <button class="profile-row" type="button" data-route="notifications">
+          <span>🔔</span><strong>Уведомления</strong><b>›</b>
+        </button>
+        <button class="profile-row" type="button" data-route="settings">
+          <span>⚙</span><strong>Настройки</strong><b>›</b>
+        </button>
+      </section>
+    </main>
+
+    <main class="screen sub-screen" data-screen="achievements">
+      <header class="sub-header">
+        <button class="back-button" data-route="profile" type="button">‹</button>
+        <h1>Достижения</h1>
+      </header>
+      <section id="achievementList" class="achievement-list"></section>
+    </main>
+
+    <main class="screen sub-screen" data-screen="notifications">
+      <header class="sub-header">
+        <button class="back-button" data-route="profile" type="button">‹</button>
+        <h1>Уведомления</h1>
+      </header>
+      <section class="phone-preview">
+        <div class="phone-frame">
+          <div class="dynamic-island"></div>
+          <div class="notification-card">
+            <small>HabitLink <span>9:00</span></small>
+            <strong>Утренняя пробежка</strong>
+            <p>Пора выполнить привычку</p>
+          </div>
+          <div class="notification-card second">
+            <small>HabitLink <span>16:30</span></small>
+            <strong>Личный прогресс</strong>
+            <p>Вы закрыли цель дня</p>
+          </div>
+        </div>
+      </section>
+      <section class="settings-stack">
+        <label class="toggle-row">
+          <span>🔔</span>
+          <strong>Общие уведомления</strong>
+          <small>Напоминания и события</small>
+          <input id="notifyGeneral" type="checkbox">
+        </label>
+        <label class="toggle-row">
+          <span>👥</span>
+          <strong>Прогресс друзей</strong>
+          <small>События в ленте</small>
+          <input id="notifyFriends" type="checkbox">
+        </label>
+      </section>
+    </main>
+
+    <main class="screen sub-screen" data-screen="settings">
+      <header class="sub-header">
+        <button class="back-button" data-route="profile" type="button">‹</button>
+        <h1>Настройки</h1>
+      </header>
+      <section class="settings-stack">
+        <div class="settings-section-label">ПРИЛОЖЕНИЕ</div>
+        <div class="settings-card app-install-card">
+          <h2>Установка на iPhone</h2>
+          <p>Открой сайт в Safari -> «Поделиться» -> «На экран "Домой"». Приложение будет работать офлайн.</p>
+        </div>
+        <div class="settings-card">
+          <h2>▦ Первый день недели</h2>
+          <div class="segmented">
+            <button id="mondayFirst" type="button" data-setting="weekStart" data-value="monday">Понедельник</button>
+            <button id="sundayFirst" type="button" data-setting="weekStart" data-value="sunday">Воскресенье</button>
+          </div>
+        </div>
+        <label class="toggle-row">
+          <span>🔒</span>
+          <strong>Приватный режим</strong>
+          <small>Скрывать прогресс в ленте</small>
+          <input id="privateMode" type="checkbox">
+        </label>
+        <div class="settings-card">
+          <h2>◉ Иконка приложения</h2>
+          <div class="icon-picker" id="appIconPicker"></div>
+        </div>
+        <button class="profile-row compact" type="button" data-action="export-data">
+          <span>⇩</span><strong>Экспорт данных</strong><b>JSON</b>
+        </button>
+        <label class="profile-row compact file-row">
+          <span>⇧</span><strong>Импорт данных</strong><b>JSON</b>
+          <input id="importFile" type="file" accept="application/json">
+        </label>
+        <button class="delete-button" type="button" data-action="reset-data">× Удалить данные</button>
+      </section>
+    </main>
+
+    <main class="screen sub-screen" data-screen="friends">
+      <header class="sub-header">
+        <button class="back-button" data-route="profile" type="button">‹</button>
+        <h1>Друзья</h1>
+      </header>
+      <section class="friend-hero friend-page">
+        <div class="bubble bubble-one">👩🏻‍🦱</div>
+        <div class="bubble bubble-two">👨🏻‍💼</div>
+        <h2>Пригласите своих друзей</h2>
+        <p>Пока это личная версия, ссылка копирует приглашение для будущей синхронизации.</p>
+        <button class="primary-button" type="button" data-action="invite">✈ Пригласить друга</button>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="Главная навигация">
+      <button class="tab active" data-route="home" type="button"><span>⌂</span><strong>Главная</strong></button>
+      <button class="tab" data-route="feed" type="button"><span>👥</span><strong>Лента</strong></button>
+      <button class="tab" data-route="profile" type="button"><span>●</span><strong>Профиль</strong></button>
+    </nav>
+  </div>
+
+  <dialog id="habitDialog" class="modal">
+    <form method="dialog" id="habitForm">
+      <header>
+        <h2 id="habitDialogTitle">Новая привычка</h2>
+        <button value="cancel" type="submit" aria-label="Закрыть">×</button>
+      </header>
+      <input id="habitId" type="hidden">
+      <label>Название<input id="habitName" required maxlength="40" placeholder="Бег по утрам"></label>
+      <label>Иконка
+        <select id="habitIcon">
+          <option value="✱">✱ Звезда</option>
+          <option value="🔥">🔥 Огонь</option>
+          <option value="⚡">⚡ Молния</option>
+          <option value="☕">☕ Кофе</option>
+          <option value="📚">📚 Учеба</option>
+          <option value="🏃">🏃 Бег</option>
+          <option value="💧">💧 Вода</option>
+        </select>
+      </label>
+      <fieldset>
+        <legend>Дни</legend>
+        <div class="weekday-grid" id="weekdayPicker"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Цвет</legend>
+        <div class="color-grid" id="colorPicker"></div>
+      </fieldset>
+      <label>Напоминание<input id="habitTime" type="time"></label>
+      <footer>
+        <button class="ghost-button" value="cancel" type="submit">Отмена</button>
+        <button class="primary-button" value="save" type="submit">Сохранить</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

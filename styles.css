@@ -58,15 +58,17 @@ button {
 .screen.active { display: block; }
 
 .screen[data-screen="profile"],
+.screen[data-screen="feed"],
 .screen[data-screen="achievements"],
 .screen[data-screen="notifications"],
 .screen[data-screen="settings"] {
   overflow: auto;
-  padding-bottom: 120px;
+  padding-bottom: calc(122px + env(safe-area-inset-bottom));
   scrollbar-width: none;
 }
 
 .screen[data-screen="profile"]::-webkit-scrollbar,
+.screen[data-screen="feed"]::-webkit-scrollbar,
 .screen[data-screen="achievements"]::-webkit-scrollbar,
 .screen[data-screen="notifications"]::-webkit-scrollbar,
 .screen[data-screen="settings"]::-webkit-scrollbar {
@@ -500,16 +502,17 @@ h1 {
 .badge small { font-size: 18px; }
 
 .progress-hero {
-  min-height: 520px;
+  min-height: 300px;
   display: grid;
   align-content: center;
   justify-items: center;
   text-align: center;
+  padding: 10px 0 12px;
 }
 
 .progress-hero h2 {
-  margin: 34px 0 18px;
-  font-size: clamp(38px, 11vw, 54px);
+  margin: 24px 0 12px;
+  font-size: clamp(32px, 9vw, 46px);
   line-height: 1.05;
 }
 
@@ -517,8 +520,8 @@ h1 {
 
 .progress-orbit {
   position: relative;
-  width: 176px;
-  height: 176px;
+  width: 136px;
+  height: 136px;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 50%;
   background: radial-gradient(circle at 50% 46%, rgba(247,247,236,.18), rgba(255,255,255,.04) 42%, transparent 68%);
@@ -540,6 +543,7 @@ h1 {
 .feed-list {
   display: grid;
   gap: 12px;
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }
 
 .feed-item {
@@ -551,6 +555,13 @@ h1 {
 
 .feed-item strong { display: block; font-size: 21px; }
 .feed-item small { color: var(--muted); font-weight: 700; }
+
+.feed-empty {
+  display: grid;
+  gap: 6px;
+  min-height: 96px;
+  align-content: center;
+}
 
 .phone-preview {
   margin-top: 56px;
@@ -896,6 +907,19 @@ h1 {
   }
   .tab-icon { width: 22px; height: 22px; }
   .tab strong { font-size: 13px; }
+  .progress-hero {
+    min-height: 250px;
+    padding-top: 4px;
+  }
+  .progress-orbit { width: 108px; height: 108px; }
+  .progress-orbit span { width: 14px; height: 14px; }
+  .progress-hero h2 { margin-top: 18px; font-size: 30px; }
+  .progress-hero p { font-size: 16px; }
+  .feed-list { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+  .feed-item {
+    border-radius: 18px;
+    padding: 16px 18px;
+  }
   .premium-card h2, .profile-row strong, .toggle-row strong { font-size: 24px; }
   .premium-card { grid-template-columns: minmax(0, 1fr) 62px; }
   .stacked-faces span { width: 52px; height: 52px; font-size: 30px; }
@@ -942,4 +966,7 @@ h1 {
   .empty-state h2 { font-size: 22px; }
   .empty-state p { font-size: 14px; }
   .tabbar { height: 64px; }
+  .progress-hero { min-height: 210px; }
+  .progress-orbit { width: 92px; height: 92px; }
+  .progress-hero h2 { margin: 14px 0 8px; font-size: 26px; }
 }

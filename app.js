@@ -237,8 +237,8 @@ function renderFeed() {
   const feed = state.settings.privateMode ? [] : state.feed.slice(0, 12);
   if (!feed.length) {
     const item = document.createElement("article");
-    item.className = "feed-item";
-    item.innerHTML = "<strong>Пока тихо</strong><small>Отметьте привычку, и событие появится здесь.</small>";
+    item.className = "feed-item feed-empty";
+    item.innerHTML = "<strong>Пока тихо</strong><small>Тут будут ваши выполненные привычки.</small>";
     list.append(item);
     return;
   }

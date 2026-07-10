@@ -13,6 +13,13 @@ const achievements = [
   { id: "streak21", group: "Серии", icon: "✱", label: "21 день", unlocked: s => bestStreak(s) >= 21 }
 ];
 
+const SKIP_REASONS = [
+  { id: "time", icon: "⏳", label: "Не было времени", theme: "нехватка времени" },
+  { id: "forgot", icon: "💭", label: "Забыл", theme: "забывчивость" },
+  { id: "motivation", icon: "🪫", label: "Не было мотивации", theme: "нехватка мотивации" },
+  { id: "busy", icon: "📌", label: "Был занят", theme: "занятость" }
+];
+
 const defaultState = {
   profileQuote: "маленькими шагами",
   settings: {
@@ -30,6 +37,8 @@ let state = loadState();
 let activeScreen = "home";
 let selectedDays = [];
 let selectedColor = colors[0];
+let chartMode = "days";
+let skipQueue = [];
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
@@ -39,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPickers();
   bindEvents();
   render();
+  checkMissedHabits();
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("service-worker.js").catch(() => {});
   }
@@ -127,6 +137,17 @@ function setupPickers() {
     colorPicker.append(button);
   });
 
+  const skipReasons = $("#skipReasons");
+  skipReasons.innerHTML = "";
+  SKIP_REASONS.forEach(reason => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "skip-reason-button";
+    button.dataset.skipReason = reason.id;
+    button.innerHTML = `<span>${reason.icon}</span>${reason.label}`;
+    skipReasons.append(button);
+  });
+
   const iconPicker = $("#appIconPicker");
   iconPicker.innerHTML = "";
   appIcons.forEach(icon => {
@@ -163,6 +184,10 @@ function bindEvents() {
   });
 
   $("#habitForm").addEventListener("submit", handleHabitSubmit);
+  $("#skipDialog").addEventListener("click", event => {
+    const button = event.target.closest("[data-skip-reason]");
+    if (button) answerSkip(button.dataset.skipReason);
+  });
   $("#notifyGeneral").addEventListener("change", event => updateSetting("notifyGeneral", event.target.checked));
   $("#notifyActivity").addEventListener("change", event => updateSetting("notifyActivity", event.target.checked));
   $("#privateMode").addEventListener("change", event => updateSetting("privateMode", event.target.checked));
@@ -187,6 +212,7 @@ function render() {
   renderProfile();
   renderFeed();
   renderHeatmap();
+  renderAnalytics();
   renderAchievements();
   renderSettings();
 }
@@ -239,7 +265,7 @@ function renderFeed() {
   if (!feed.length) {
     const item = document.createElement("article");
     item.className = "feed-item feed-empty";
-    item.innerHTML = "<strong>Пока тихо</strong><small>Тут будут ваши выполненные привычки.</small>";
+    item.innerHTML = "<strong>Пока тихо</strong><small>Тут будут ваши выполненные привычк��.</small>";
     list.append(item);
     return;
   }
@@ -309,7 +335,11 @@ function heatmapStats(counts) {
 }
 
 function renderHeatmap() {
-  const card = $("#heatmapCard");
+  renderHeatmapInto($("#heatmapCard"));
+  renderHeatmapInto($("#analyticsHeatmap"));
+}
+
+function renderHeatmapInto(card) {
   if (!card) return;
   const counts = completionCounts();
   const stats = heatmapStats(counts);
@@ -351,7 +381,7 @@ function renderHeatmap() {
       <h2>Активность</h2>
       <small>${stats.total} отметок за всё время</small>
     </div>
-    <div class="heatmap-scroll" id="heatmapScroll">
+    <div class="heatmap-scroll">
       <div class="heat-months">${monthLabels.join("")}</div>
       <div class="heat-grid">${weeks.join("")}</div>
     </div>
@@ -381,8 +411,280 @@ function renderHeatmap() {
     showToast(count ? `${label}: выполнено ${count}` : `${label}: без отметок`);
   });
 
-  const scroll = card.querySelector("#heatmapScroll");
+  const scroll = card.querySelector(".heatmap-scroll");
   scroll.scrollLeft = scroll.scrollWidth;
+}
+
+function habitStartKey(habit) {
+  if (habit.createdAt) return habit.createdAt;
+  const keys = Object.keys(habit.completions || {}).sort();
+  return keys[0] || dateKey();
+}
+
+function shiftKey(offset) {
+  const date = new Date();
+  date.setDate(date.getDate() - offset);
+  return { key: dateKey(date), day: date.getDay(), date };
+}
+
+function periodStats(daysBack) {
+  let scheduled = 0;
+  let completed = 0;
+  for (let i = 0; i < daysBack; i += 1) {
+    const { key, day } = shiftKey(i);
+    state.habits.forEach(habit => {
+      if (!habit.days.includes(day) || key < habitStartKey(habit)) return;
+      scheduled += 1;
+      if (habit.completions?.[key]) completed += 1;
+    });
+  }
+  return { scheduled, completed, pct: scheduled ? Math.round((completed / scheduled) * 100) : 0 };
+}
+
+function habitBestStreak(habit) {
+  const doneKeys = Object.keys(habit.completions || {}).filter(key => habit.completions[key]).sort();
+  if (!doneKeys.length) return 0;
+  const todayKey = dateKey();
+  let best = 0;
+  let run = 0;
+  const cursor = new Date(`${doneKeys[0]}T12:00:00`);
+  while (dateKey(cursor) <= todayKey) {
+    const key = dateKey(cursor);
+    if (habit.days.includes(cursor.getDay())) {
+      if (habit.completions[key]) {
+        run += 1;
+        best = Math.max(best, run);
+      } else if (key !== todayKey) {
+        run = 0;
+      }
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return best;
+}
+
+function bestStreakInfo() {
+  let best = { length: 0, name: "пока нет серий" };
+  state.habits.forEach(habit => {
+    const length = habitBestStreak(habit);
+    if (length > best.length) best = { length, name: `${habit.icon} ${habit.name}` };
+  });
+  return best;
+}
+
+function renderAnalytics() {
+  const summary = $("#analyticsSummary");
+  if (!summary) return;
+  const week = periodStats(7);
+  const month = periodStats(30);
+  const best = bestStreakInfo();
+  summary.innerHTML = `
+    <div class="summary-tile"><b>${week.pct}%</b><small>за неделю</small><span>${week.completed} из ${week.scheduled}</span></div>
+    <div class="summary-tile"><b>${month.pct}%</b><small>за месяц</small><span>${month.completed} из ${month.scheduled}</span></div>
+    <div class="summary-tile wide"><b>🔥 ${best.length} ${dayWord(best.length)}</b><small>лучший период</small><span>${escapeHtml(best.name)}</span></div>
+  `;
+  renderProgressChart();
+  renderComparison();
+  renderSkipAnalytics();
+}
+
+function dayWord(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "день";
+  if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100)) return "дня";
+  return "дней";
+}
+
+function renderProgressChart() {
+  const card = $("#progressChartCard");
+  if (!card) return;
+  const isDays = chartMode === "days";
+  const points = [];
+  if (isDays) {
+    for (let i = 13; i >= 0; i -= 1) {
+      const { key, day, date } = shiftKey(i);
+      let scheduled = 0;
+      let completed = 0;
+      state.habits.forEach(habit => {
+        if (!habit.days.includes(day) || key < habitStartKey(habit)) return;
+        scheduled += 1;
+        if (habit.completions?.[key]) completed += 1;
+      });
+      points.push({
+        pct: scheduled ? Math.round((completed / scheduled) * 100) : 0,
+        empty: !scheduled,
+        label: String(date.getDate()),
+        title: `${date.toLocaleString("ru-RU", { day: "numeric", month: "short" })}: ${completed} из ${scheduled}`
+      });
+    }
+  } else {
+    for (let w = 7; w >= 0; w -= 1) {
+      let scheduled = 0;
+      let completed = 0;
+      let label = "";
+      for (let d = 6; d >= 0; d -= 1) {
+        const { key, day, date } = shiftKey(w * 7 + d);
+        if (d === 6) label = `${date.getDate()}.${String(date.getMonth() + 1).padStart(2, "0")}`;
+        state.habits.forEach(habit => {
+          if (!habit.days.includes(day) || key < habitStartKey(habit)) return;
+          scheduled += 1;
+          if (habit.completions?.[key]) completed += 1;
+        });
+      }
+      points.push({
+        pct: scheduled ? Math.round((completed / scheduled) * 100) : 0,
+        empty: !scheduled,
+        label,
+        title: `Неделя с ${label}: ${completed} из ${scheduled}`
+      });
+    }
+  }
+  card.innerHTML = `
+    <div class="analytics-head">
+      <h2>График прогресса</h2>
+      <div class="chart-toggle">
+        <button type="button" data-chart-mode="days" class="${isDays ? "active" : ""}">Дни</button>
+        <button type="button" data-chart-mode="weeks" class="${!isDays ? "active" : ""}">Недели</button>
+      </div>
+    </div>
+    <div class="chart-bars ${isDays ? "mode-days" : "mode-weeks"}">
+      ${points.map(point => `
+        <div class="chart-col" title="${point.title}">
+          <div class="chart-track"><div class="chart-fill ${point.empty ? "empty" : ""}" style="height:${Math.max(point.pct, point.empty ? 0 : 4)}%"></div></div>
+          <small>${point.label}</small>
+        </div>
+      `).join("")}
+    </div>
+  `;
+  card.querySelectorAll("[data-chart-mode]").forEach(button => {
+    button.addEventListener("click", () => {
+      chartMode = button.dataset.chartMode;
+      renderProgressChart();
+    });
+  });
+}
+
+function renderComparison() {
+  const card = $("#compareCard");
+  if (!card) return;
+  const rows = state.habits.map(habit => {
+    let scheduled = 0;
+    let completed = 0;
+    for (let i = 0; i < 30; i += 1) {
+      const { key, day } = shiftKey(i);
+      if (!habit.days.includes(day) || key < habitStartKey(habit)) continue;
+      scheduled += 1;
+      if (habit.completions?.[key]) completed += 1;
+    }
+    return { habit, scheduled, completed, pct: scheduled ? Math.round((completed / scheduled) * 100) : 0 };
+  }).sort((a, b) => b.pct - a.pct);
+  card.innerHTML = `
+    <div class="analytics-head">
+      <h2>Сравнение привычек</h2>
+      <small>за 30 дней</small>
+    </div>
+    ${rows.length ? rows.map(row => `
+      <div class="compare-row">
+        <span class="compare-name">${escapeHtml(row.habit.icon)} ${escapeHtml(row.habit.name)}</span>
+        <div class="compare-track"><div class="compare-fill" style="width:${row.pct}%;background:${row.habit.color}"></div></div>
+        <b>${row.pct}%</b>
+      </div>
+    `).join("") : `<p class="analytics-empty">Добавьте привычки, чтобы сравнивать их.</p>`}
+  `;
+}
+
+function collectSkips() {
+  const counts = {};
+  let total = 0;
+  state.habits.forEach(habit => {
+    Object.values(habit.skips || {}).forEach(reason => {
+      if (reason === "dismissed") return;
+      counts[reason] = (counts[reason] || 0) + 1;
+      total += 1;
+    });
+  });
+  return { counts, total };
+}
+
+function renderSkipAnalytics() {
+  const card = $("#skipReasonCard");
+  if (!card) return;
+  const { counts, total } = collectSkips();
+  const rows = SKIP_REASONS.map(reason => ({ ...reason, count: counts[reason.id] || 0 })).sort((a, b) => b.count - a.count);
+  const top = rows[0];
+  card.innerHTML = `
+    <div class="analytics-head">
+      <h2>Причины пропусков</h2>
+      <small>${total ? `ответов: ${total}` : ""}</small>
+    </div>
+    ${total ? `
+      <p class="skip-insight">Главная причина пропусков — <b>${top.theme}</b>.</p>
+      ${rows.map(row => `
+        <div class="compare-row">
+          <span class="compare-name">${row.icon} ${row.label}</span>
+          <div class="compare-track"><div class="compare-fill accent" style="width:${Math.round((row.count / total) * 100)}%"></div></div>
+          <b>${row.count}</b>
+        </div>
+      `).join("")}
+    ` : `<p class="analytics-empty">Когда вы пропустите привычку, приложение спросит почему. Через время здесь появится аналитика причин — и станет понятно, что мешает чаще всего.</p>`}
+  `;
+}
+
+function checkMissedHabits() {
+  skipQueue = [];
+  state.habits.forEach(habit => {
+    const startKey = habitStartKey(habit);
+    for (let i = 1; i <= 7; i += 1) {
+      const { key, day } = shiftKey(i);
+      if (key < startKey) continue;
+      if (!habit.days.includes(day)) continue;
+      if (habit.completions?.[key]) continue;
+      if (habit.skips?.[key]) continue;
+      skipQueue.push({ habitId: habit.id, key });
+    }
+  });
+  skipQueue.sort((a, b) => b.key.localeCompare(a.key));
+  skipQueue = skipQueue.slice(0, 3);
+  processSkipQueue();
+}
+
+function processSkipQueue() {
+  const dialog = $("#skipDialog");
+  if (!dialog) return;
+  if (!skipQueue.length) {
+    if (dialog.open) dialog.close();
+    return;
+  }
+  const item = skipQueue[0];
+  const habit = state.habits.find(entry => entry.id === item.habitId);
+  if (!habit) {
+    skipQueue.shift();
+    processSkipQueue();
+    return;
+  }
+  const date = new Date(`${item.key}T12:00:00`);
+  $("#skipContext").innerHTML = `${escapeHtml(habit.icon)} <b>${escapeHtml(habit.name)}</b> — пропуск ${date.toLocaleString("ru-RU", { day: "numeric", month: "long" })}`;
+  if (!dialog.open) dialog.showModal();
+}
+
+function answerSkip(reasonId) {
+  const item = skipQueue.shift();
+  if (item) {
+    const habit = state.habits.find(entry => entry.id === item.habitId);
+    if (habit) {
+      habit.skips ||= {};
+      habit.skips[item.key] = reasonId;
+      saveState();
+    }
+  }
+  if (skipQueue.length) {
+    processSkipQueue();
+  } else {
+    $("#skipDialog").close();
+    renderAnalytics();
+    if (reasonId !== "dismissed") showToast("Спасибо! Ответы копятся в Аналитике.");
+  }
 }
 
 function renderAchievements() {
@@ -449,6 +751,7 @@ function handleHabitSubmit(event) {
   if (event.submitter?.value !== "save") return;
   event.preventDefault();
   const id = $("#habitId").value;
+  const existing = state.habits.find(item => item.id === id);
   const habit = {
     id: id || crypto.randomUUID(),
     name: $("#habitName").value.trim(),
@@ -456,7 +759,9 @@ function handleHabitSubmit(event) {
     color: selectedColor,
     days: selectedDays.length ? selectedDays : [0, 1, 2, 3, 4, 5, 6],
     time: $("#habitTime").value,
-    completions: state.habits.find(item => item.id === id)?.completions || {}
+    completions: existing?.completions || {},
+    skips: existing?.skips || {},
+    createdAt: existing?.createdAt || dateKey()
   };
   if (!habit.name) return;
   state.habits = id ? state.habits.map(item => item.id === id ? habit : item) : [habit, ...state.habits];

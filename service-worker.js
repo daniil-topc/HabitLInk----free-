@@ -1,4 +1,4 @@
-const CACHE_NAME = "habitlink-personal-v10";
+const CACHE_NAME = "habitlink-personal-v11";
 const ASSETS = [
   "./",
   "index.html",

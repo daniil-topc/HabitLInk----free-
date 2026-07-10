@@ -71,6 +71,9 @@
         </div>
       </section>
       <section class="profile-list">
+        <button class="profile-row" type="button" data-route="analytics">
+          <span>📊</span><strong>Аналитика</strong><b>›</b>
+        </button>
         <button class="profile-row" type="button" data-route="achievements">
           <span>🏆</span><strong>Достижения</strong><small id="achievementPreview"></small>
         </button>
@@ -80,6 +83,20 @@
         <button class="profile-row" type="button" data-route="settings">
           <span>⚙</span><strong>Настройки</strong><b>›</b>
         </button>
+      </section>
+    </main>
+
+    <main class="screen sub-screen" data-screen="analytics">
+      <header class="sub-header">
+        <button class="back-button" data-route="profile" type="button">‹</button>
+        <h1>Аналитика</h1>
+      </header>
+      <section class="analytics-stack">
+        <div class="analytics-summary" id="analyticsSummary"></div>
+        <section class="analytics-card" id="progressChartCard"></section>
+        <section class="heatmap-card" id="analyticsHeatmap" aria-label="Карта активности"></section>
+        <section class="analytics-card" id="compareCard"></section>
+        <section class="analytics-card" id="skipReasonCard"></section>
       </section>
     </main>
 
@@ -230,6 +247,15 @@
         <button class="primary-button" value="save" type="submit">Сохранить</button>
       </footer>
     </form>
+  </dialog>
+
+  <dialog id="skipDialog" class="modal skip-modal">
+    <header>
+      <h2>Почему не получилось?</h2>
+    </header>
+    <p class="skip-context" id="skipContext"></p>
+    <div class="skip-reasons" id="skipReasons"></div>
+    <button class="ghost-button skip-dismiss" type="button" data-skip-reason="dismissed">Не хочу отвечать</button>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

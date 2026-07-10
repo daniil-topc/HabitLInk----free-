@@ -57,6 +57,7 @@ button {
 
 .screen.active { display: block; }
 
+.screen[data-screen="home"],
 .screen[data-screen="profile"],
 .screen[data-screen="feed"],
 .screen[data-screen="achievements"],
@@ -67,6 +68,7 @@ button {
   scrollbar-width: none;
 }
 
+.screen[data-screen="home"]::-webkit-scrollbar,
 .screen[data-screen="profile"]::-webkit-scrollbar,
 .screen[data-screen="feed"]::-webkit-scrollbar,
 .screen[data-screen="achievements"]::-webkit-scrollbar,
@@ -134,13 +136,8 @@ h1 {
 .habit-list {
   display: grid;
   gap: 14px;
-  max-height: calc(100svh - 260px);
-  overflow: auto;
   padding-bottom: 6px;
-  scrollbar-width: none;
 }
-
-.habit-list::-webkit-scrollbar { display: none; }
 
 .habit-card {
   min-height: 206px;
@@ -1008,7 +1005,6 @@ h1 {
   .icon-button { width: 44px; height: 44px; font-size: 30px; }
   .habit-list {
     gap: 10px;
-    max-height: calc(100svh - 190px);
   }
   .habit-card {
     min-height: 154px;
@@ -1177,7 +1173,6 @@ h1 {
   .topbar { padding-top: 18px; }
   h1 { margin-bottom: 14px; font-size: 40px; }
   .title-row { margin-bottom: 14px; }
-  .habit-list { max-height: calc(100svh - 168px); }
   .habit-card {
     min-height: 138px;
     padding: 16px 18px 14px;

@@ -381,13 +381,13 @@ h1 {
 }
 
 .premium-copy { min-width: 0; }
-.chain-icon { font-size: 42px; line-height: 1; }
-.premium-card h2 { margin: 16px 0 16px; font-size: 30px; color: #f0d6bd; }
+.chain-icon { font-size: clamp(32px, 9vw, 42px); line-height: 1; }
+.premium-card h2 { margin: 16px 0 16px; font-size: clamp(21px, 6vw, 30px); color: #f0d6bd; text-wrap: balance; }
 .premium-card p {
   max-width: 100%;
   margin-bottom: 8px;
   color: rgba(240,214,189,.7);
-  font-size: 19px;
+  font-size: clamp(15px, 4.4vw, 19px);
   font-weight: 800;
   line-height: 1.25;
 }
@@ -435,12 +435,16 @@ h1 {
   text-align: left;
 }
 
-.profile-row span, .toggle-row span { font-size: 30px; filter: grayscale(1); }
-.profile-row strong, .toggle-row strong { font-size: 30px; }
-.profile-row small { justify-self: end; }
-.profile-row b { color: #9a9a9d; font-size: 42px; font-weight: 500; }
-.profile-row.compact strong { font-size: 25px; }
-.profile-row.compact b { font-size: 18px; }
+.profile-row span, .toggle-row span { font-size: clamp(22px, 6.5vw, 30px); filter: grayscale(1); }
+.profile-row strong, .toggle-row strong {
+  min-width: 0;
+  font-size: clamp(19px, 6vw, 30px);
+  overflow-wrap: anywhere;
+}
+.profile-row small { justify-self: end; white-space: nowrap; }
+.profile-row b { color: #9a9a9d; font-size: clamp(30px, 9vw, 42px); font-weight: 500; }
+.profile-row.compact strong { font-size: clamp(17px, 5.4vw, 25px); }
+.profile-row.compact b { font-size: clamp(14px, 4vw, 18px); }
 
 .sub-header {
   display: grid;
@@ -476,7 +480,7 @@ h1 {
 .achievement-card h2 {
   margin-bottom: 26px;
   color: var(--accent);
-  font-size: 30px;
+  font-size: clamp(22px, 6vw, 30px);
 }
 
 .badges {
@@ -499,7 +503,7 @@ h1 {
   filter: saturate(.25) brightness(.65);
 }
 .badge.unlocked .badge-icon { filter: saturate(1) brightness(1); }
-.badge small { font-size: 18px; }
+.badge small { font-size: clamp(13px, 3.8vw, 18px); }
 
 .progress-hero {
   min-height: 300px;
@@ -553,7 +557,7 @@ h1 {
   background: var(--panel);
 }
 
-.feed-item strong { display: block; font-size: 21px; }
+.feed-item strong { display: block; font-size: clamp(17px, 4.8vw, 21px); }
 .feed-item small { color: var(--muted); font-weight: 700; }
 
 .feed-empty {
@@ -612,7 +616,7 @@ h1 {
 .toggle-row small {
   grid-column: 2 / 4;
   color: #6d6d72;
-  font-size: 18px;
+  font-size: clamp(14px, 4.2vw, 18px);
   font-weight: 800;
 }
 
@@ -653,8 +657,9 @@ h1 {
 
 .settings-card h2 {
   color: #9d9da1;
-  font-size: 28px;
+  font-size: clamp(19px, 5.6vw, 28px);
   margin-bottom: 26px;
+  text-wrap: balance;
 }
 
 .app-install-card {
@@ -945,6 +950,85 @@ h1 {
   .modal input, .modal select { padding: 11px 12px; }
   .weekday-grid, .color-grid { gap: 5px; }
   .weekday-grid button, .color-grid button { border-radius: 10px; }
+}
+
+@media (max-width: 360px) {
+  .screen { padding-left: 13px; padding-right: 13px; }
+  h1 { font-size: clamp(32px, 11.5vw, 42px); }
+  .sub-header h1 { font-size: clamp(30px, 10.5vw, 42px); }
+  .back-button { font-size: 56px; }
+  .date-label { font-size: 13px; }
+  .title-row { gap: 6px; }
+  .premium { min-width: 72px; height: 40px; font-size: 14px; }
+  .icon-button { width: 40px; height: 40px; font-size: 27px; }
+  .name-button { font-size: clamp(17px, 5.4vw, 22px); }
+  .avatar-button { width: 46px; height: 46px; font-size: 24px; }
+  .dots-button { font-size: 26px; }
+
+  .habit-card { padding: 16px 16px 14px; }
+  .habit-icon { font-size: 30px; }
+  .habit-card h2 { font-size: 21px; }
+  .habit-card p { font-size: 16px; }
+  .streak { font-size: 17px; }
+  .week-dashes { gap: 5px; }
+
+  .profile-list, .settings-stack { gap: 12px; margin-top: 24px; }
+  .profile-row, .toggle-row, .settings-card { min-height: 68px; border-radius: 20px; }
+  .profile-row { padding: 14px 16px; gap: 12px; }
+  .toggle-row { padding: 16px 14px; gap: 4px 12px; }
+  .toggle-row input { width: 58px; height: 34px; }
+  .toggle-row input::after { width: 26px; height: 26px; }
+  .toggle-row input:checked::after { transform: translateX(24px); }
+  .settings-card { padding: 18px 16px; }
+  .settings-card h2 { margin-bottom: 16px; }
+  .segmented { gap: 8px; }
+  .segmented button { min-height: 48px; font-size: 14px; padding: 0 6px; }
+  .icon-picker { gap: 10px; }
+  .icon-choice { border-radius: 16px; font-size: 28px; }
+  .delete-button { margin-top: 24px; font-size: 22px; }
+
+  .premium-card {
+    grid-template-columns: minmax(0, 1fr) 52px;
+    gap: 10px;
+    margin-top: 56px;
+    padding: 28px 16px 22px;
+  }
+  .premium-badge { padding: 10px 30px; font-size: 19px; top: -18px; }
+  .premium-card h2 { margin: 12px 0; font-size: 20px; }
+  .premium-card p { font-size: 14px; }
+  .chain-icon { font-size: 30px; }
+  .stacked-faces { gap: 6px; min-height: 140px; }
+  .stacked-faces span { width: 44px; height: 44px; font-size: 24px; }
+  .profile-header { padding-top: 34px; gap: 10px; }
+  .sub-header { padding-top: 34px; }
+
+  .achievement-list { gap: 12px; margin-top: 40px; }
+  .achievement-card { padding: 20px 16px 22px; border-radius: 22px; }
+  .achievement-card h2 { margin-bottom: 16px; }
+  .badges { gap: 8px; }
+  .badge-icon { border-radius: 18px; font-size: 34px; margin-bottom: 8px; }
+
+  .phone-preview { margin-top: 32px; }
+  .phone-frame { height: 300px; border-width: 6px; border-radius: 42px 42px 0 0; }
+  .dynamic-island { margin-bottom: 34px; }
+  .notification-card { width: calc(100% - 36px); margin-bottom: 16px; padding: 13px; }
+
+  .feed-item { padding: 14px 16px; }
+  .progress-hero { min-height: 220px; }
+
+  .tabbar { width: calc(100vw - 26px); height: 64px; }
+  .tab-icon { width: 20px; height: 20px; }
+  .tab strong { font-size: 12px; }
+
+  .modal { width: calc(100vw - 14px); padding: 12px; }
+  .modal header h2 { font-size: 20px; }
+  .modal label, .modal fieldset { font-size: 15px; }
+  .modal input, .modal select { padding: 10px 11px; border-radius: 12px; }
+  .weekday-grid, .color-grid { gap: 4px; }
+  .weekday-grid button { font-size: 13px; border-radius: 9px; }
+  .primary-button, .ghost-button, .danger-button { min-height: 50px; font-size: 15px; padding: 0 12px; }
+
+  .toast { bottom: 92px; font-size: 14px; }
 }
 
 @media (max-height: 680px) {

@@ -186,6 +186,7 @@ function render() {
   renderHome();
   renderProfile();
   renderFeed();
+  renderHeatmap();
   renderAchievements();
   renderSettings();
 }
@@ -248,6 +249,140 @@ function renderFeed() {
     item.innerHTML = `<strong>${escapeHtml(entry.title)}</strong><small>${escapeHtml(entry.time)}</small>`;
     list.append(item);
   });
+}
+
+const HEATMAP_WEEKS = 26;
+
+function completionCounts() {
+  const counts = {};
+  state.habits.forEach(habit => {
+    Object.entries(habit.completions || {}).forEach(([key, done]) => {
+      if (done) counts[key] = (counts[key] || 0) + 1;
+    });
+  });
+  return counts;
+}
+
+function heatLevel(count) {
+  if (!count) return 0;
+  if (count === 1) return 1;
+  if (count === 2) return 2;
+  if (count === 3) return 3;
+  return 4;
+}
+
+function heatmapStats(counts) {
+  const keys = Object.keys(counts).sort();
+  const todayKey = dateKey();
+  if (!keys.length) {
+    return { total: 0, average: "0", activePct: 0, bestStreak: 0, currentStreak: 0 };
+  }
+  const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+  const firstDate = new Date(`${keys[0]}T00:00:00`);
+  const daysSpan = Math.max(1, Math.round((new Date(`${todayKey}T00:00:00`) - firstDate) / 86400000) + 1);
+  const activeDays = keys.length;
+
+  let best = 0;
+  let run = 0;
+  const cursor = new Date(firstDate);
+  for (let i = 0; i < daysSpan; i += 1) {
+    run = counts[dateKey(cursor)] ? run + 1 : 0;
+    best = Math.max(best, run);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  let current = 0;
+  const back = new Date();
+  if (!counts[dateKey(back)]) back.setDate(back.getDate() - 1);
+  while (counts[dateKey(back)]) {
+    current += 1;
+    back.setDate(back.getDate() - 1);
+  }
+
+  return {
+    total,
+    average: (total / daysSpan).toFixed(1).replace(".", ","),
+    activePct: Math.round((activeDays / daysSpan) * 100),
+    bestStreak: best,
+    currentStreak: current
+  };
+}
+
+function renderHeatmap() {
+  const card = $("#heatmapCard");
+  if (!card) return;
+  const counts = completionCounts();
+  const stats = heatmapStats(counts);
+  const weekStartDay = state.settings.weekStart === "monday" ? 1 : 0;
+  const todayKey = dateKey();
+
+  const gridEnd = new Date();
+  const shift = (gridEnd.getDay() - weekStartDay + 7) % 7;
+  gridEnd.setDate(gridEnd.getDate() + (6 - shift));
+  const gridStart = new Date(gridEnd);
+  gridStart.setDate(gridStart.getDate() - HEATMAP_WEEKS * 7 + 1);
+
+  const weeks = [];
+  const monthLabels = [];
+  const cursor = new Date(gridStart);
+  for (let w = 0; w < HEATMAP_WEEKS; w += 1) {
+    const cells = [];
+    let label = "";
+    for (let d = 0; d < 7; d += 1) {
+      const key = dateKey(cursor);
+      const count = counts[key] || 0;
+      const isFuture = key > todayKey;
+      const classes = ["heat-cell"];
+      if (!isFuture) classes.push(`level-${heatLevel(count)}`);
+      if (isFuture) classes.push("future");
+      if (key === todayKey) classes.push("today");
+      cells.push(`<button type="button" class="${classes.join(" ")}" data-date="${key}" data-count="${count}" ${isFuture ? "disabled" : ""} aria-label="${key}: ${count}"></button>`);
+      if (cursor.getDate() === 1) {
+        label = cursor.toLocaleString("ru-RU", { month: "short" }).replace(".", "");
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    weeks.push(`<div class="heat-week">${cells.join("")}</div>`);
+    monthLabels.push(`<span>${label}</span>`);
+  }
+
+  card.innerHTML = `
+    <div class="heatmap-head">
+      <h2>Активность</h2>
+      <small>${stats.total} отметок за всё время</small>
+    </div>
+    <div class="heatmap-scroll" id="heatmapScroll">
+      <div class="heat-months">${monthLabels.join("")}</div>
+      <div class="heat-grid">${weeks.join("")}</div>
+    </div>
+    <div class="heatmap-legend">
+      <small>Меньше</small>
+      <span class="heat-cell level-0"></span>
+      <span class="heat-cell level-1"></span>
+      <span class="heat-cell level-2"></span>
+      <span class="heat-cell level-3"></span>
+      <span class="heat-cell level-4"></span>
+      <small>Больше</small>
+    </div>
+    <div class="heatmap-stats">
+      <div><b>${stats.activePct}%</b><small>дней активно</small></div>
+      <div><b>${stats.average}</b><small>в день</small></div>
+      <div><b>${stats.bestStreak}</b><small>лучшая серия</small></div>
+      <div><b class="streak-now">${stats.currentStreak}</b><small>текущая серия</small></div>
+    </div>
+  `;
+
+  card.querySelector(".heat-grid").addEventListener("click", event => {
+    const cell = event.target.closest(".heat-cell[data-date]");
+    if (!cell) return;
+    const date = new Date(`${cell.dataset.date}T00:00:00`);
+    const label = date.toLocaleString("ru-RU", { day: "numeric", month: "long" });
+    const count = Number(cell.dataset.count);
+    showToast(count ? `${label}: выполнено ${count}` : `${label}: без отметок`);
+  });
+
+  const scroll = card.querySelector("#heatmapScroll");
+  scroll.scrollLeft = scroll.scrollWidth;
 }
 
 function renderAchievements() {

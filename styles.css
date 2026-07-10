@@ -40,7 +40,7 @@ button {
 .app-shell {
   position: relative;
   width: min(100vw, 480px);
-  min-height: 100svh;
+  height: 100svh;
   padding-bottom: 132px;
   overflow: hidden;
   background:
@@ -51,10 +51,29 @@ button {
 .screen {
   display: none;
   padding: max(26px, env(safe-area-inset-top)) 22px 20px;
-  min-height: 100svh;
+  height: 100svh;
+  overflow: hidden;
 }
 
 .screen.active { display: block; }
+
+.screen[data-screen="profile"],
+.screen[data-screen="achievements"],
+.screen[data-screen="notifications"],
+.screen[data-screen="settings"],
+.screen[data-screen="friends"] {
+  overflow: auto;
+  padding-bottom: 120px;
+  scrollbar-width: none;
+}
+
+.screen[data-screen="profile"]::-webkit-scrollbar,
+.screen[data-screen="achievements"]::-webkit-scrollbar,
+.screen[data-screen="notifications"]::-webkit-scrollbar,
+.screen[data-screen="settings"]::-webkit-scrollbar,
+.screen[data-screen="friends"]::-webkit-scrollbar {
+  display: none;
+}
 
 .topbar { padding-top: 58px; }
 
@@ -109,7 +128,13 @@ h1 {
 .habit-list {
   display: grid;
   gap: 14px;
+  max-height: calc(100svh - 260px);
+  overflow: auto;
+  padding-bottom: 6px;
+  scrollbar-width: none;
 }
+
+.habit-list::-webkit-scrollbar { display: none; }
 
 .habit-card {
   min-height: 206px;
@@ -216,7 +241,7 @@ h1 {
 
 .empty-state {
   display: none;
-  padding: 44px 12px;
+  padding: 30px 12px 0;
   text-align: center;
 }
 
@@ -694,6 +719,8 @@ h1 {
 
 .modal {
   width: min(420px, calc(100vw - 28px));
+  max-height: min(760px, calc(100svh - 28px));
+  overflow: auto;
   border: 1px solid var(--line);
   border-radius: 28px;
   color: var(--text);
@@ -782,13 +809,95 @@ h1 {
   transform: translate(-50%, 0);
 }
 
-@media (max-width: 390px) {
-  .screen { padding-inline: 16px; }
-  .topbar, .profile-header, .sub-header { padding-top: 46px; }
+@media (max-width: 390px), (max-height: 760px) {
+  .app-shell { padding-bottom: 92px; }
+  .screen { padding: max(14px, env(safe-area-inset-top)) 16px 14px; }
+  .topbar { padding-top: 30px; }
+  .profile-header, .sub-header { padding-top: 38px; }
+  .date-label { margin-bottom: 6px; font-size: 14px; }
+  h1 { margin-bottom: 18px; font-size: clamp(38px, 12vw, 48px); }
+  .title-row { gap: 8px; }
+  .premium { min-width: 88px; height: 42px; font-size: 15px; }
+  .icon-button { width: 44px; height: 44px; font-size: 30px; }
+  .habit-list {
+    gap: 10px;
+    max-height: calc(100svh - 190px);
+  }
+  .habit-card {
+    min-height: 154px;
+    border-radius: 22px;
+    padding: 18px 20px 16px;
+  }
+  .habit-icon { font-size: 34px; }
+  .done-button { width: 38px; height: 38px; }
+  .habit-card h2 {
+    margin-top: 34px;
+    font-size: 24px;
+  }
+  .habit-card p {
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+  .week-dashes { gap: 6px; }
+  .week-dashes span { height: 10px; }
+  .streak { font-size: 19px; }
+  .empty-state {
+    min-height: calc(100svh - 210px);
+    padding: 18px 10px 0;
+    display: none;
+    align-content: center;
+  }
+  .empty-state.visible { display: grid; }
+  .empty-mark {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 18px;
+    border-radius: 22px;
+    font-size: 46px;
+  }
+  .empty-state h2 { font-size: 25px; margin-bottom: 8px; }
+  .empty-state p { font-size: 16px; }
+  .empty-state .primary-button { min-height: 50px; margin-top: 4px; }
+  .tabbar {
+    width: calc(100vw - 46px);
+    height: 70px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  .tab-icon { width: 22px; height: 22px; }
+  .tab strong { font-size: 13px; }
   .premium-card h2, .profile-row strong, .toggle-row strong { font-size: 24px; }
   .premium-card { grid-template-columns: minmax(0, 1fr) 62px; }
   .stacked-faces span { width: 52px; height: 52px; font-size: 30px; }
   .stacked-faces { gap: 8px; min-height: 164px; }
-  .tabbar { width: calc(100vw - 46px); }
   .badges { gap: 10px; }
+  .modal {
+    width: calc(100vw - 20px);
+    border-radius: 22px;
+    padding: 14px;
+  }
+  .modal form { gap: 12px; }
+  .modal header h2 { font-size: 23px; }
+  .modal input, .modal select { padding: 11px 12px; }
+  .weekday-grid, .color-grid { gap: 5px; }
+  .weekday-grid button, .color-grid button { border-radius: 10px; }
+}
+
+@media (max-height: 680px) {
+  .topbar { padding-top: 18px; }
+  h1 { margin-bottom: 14px; font-size: 40px; }
+  .habit-list { max-height: calc(100svh - 168px); }
+  .habit-card {
+    min-height: 138px;
+    padding: 16px 18px 14px;
+  }
+  .habit-card h2 { margin-top: 24px; font-size: 22px; }
+  .habit-card p { margin-bottom: 12px; font-size: 16px; }
+  .empty-state {
+    min-height: calc(100svh - 184px);
+    padding-top: 4px;
+  }
+  .empty-mark { width: 58px; height: 58px; margin-bottom: 12px; font-size: 38px; }
+  .empty-state h2 { font-size: 22px; }
+  .empty-state p { font-size: 14px; }
+  .tabbar { height: 64px; }
 }

@@ -211,10 +211,10 @@
     <form method="dialog" id="habitForm">
       <header>
         <h2 id="habitDialogTitle">Новая привычка</h2>
-        <button value="cancel" type="submit" aria-label="Закрыть">×</button>
+        <button value="cancel" type="button" data-action="close-habit" aria-label="Закрыть">×</button>
       </header>
       <input id="habitId" type="hidden">
-      <label>Название<input id="habitName" required maxlength="40" placeholder="Бег по утрам"></label>
+      <label>Название<input id="habitName" required maxlength="40" placeholder="Например: чтение"></label>
       <label>Иконка
         <select id="habitIcon">
           <option value="✱">✱ Звезда</option>
@@ -236,7 +236,7 @@
       </fieldset>
       <label>Напоминание<input id="habitTime" type="time"></label>
       <footer>
-        <button class="ghost-button" value="cancel" type="submit">Отмена</button>
+        <button class="ghost-button" value="cancel" type="button" data-action="close-habit">Отмена</button>
         <button class="primary-button" value="save" type="submit">Сохранить</button>
       </footer>
     </form>

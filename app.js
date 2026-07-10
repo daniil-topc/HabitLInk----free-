@@ -22,17 +22,7 @@ const defaultState = {
     notifyFriends: true,
     appIcon: "∞"
   },
-  habits: [
-    {
-      id: crypto.randomUUID(),
-      name: "Бег по утрам",
-      icon: "✱",
-      color: "#59633f",
-      days: [2, 4, 6, 0],
-      time: "09:00",
-      completions: {}
-    }
-  ],
+  habits: [],
   feed: []
 };
 
@@ -64,13 +54,28 @@ function loadState() {
 }
 
 function mergeState(saved) {
+  const savedHabits = Array.isArray(saved.habits) ? saved.habits : [];
   return {
     ...structuredClone(defaultState),
     ...saved,
     settings: { ...defaultState.settings, ...(saved.settings || {}) },
-    habits: Array.isArray(saved.habits) ? saved.habits : defaultState.habits,
+    habits: removeOldStarterHabit(savedHabits),
     feed: Array.isArray(saved.feed) ? saved.feed : []
   };
+}
+
+function removeOldStarterHabit(habits) {
+  if (habits.length !== 1) return habits;
+  const [habit] = habits;
+  const isOldStarter =
+    habit?.name === "Бег по утрам" &&
+    habit?.icon === "✱" &&
+    habit?.color === "#59633f" &&
+    habit?.time === "09:00" &&
+    Array.isArray(habit?.days) &&
+    habit.days.join(",") === "2,4,6,0" &&
+    Object.keys(habit?.completions || {}).length === 0;
+  return isOldStarter ? [] : habits;
 }
 
 function saveState() {
@@ -148,6 +153,7 @@ function bindEvents() {
     if (!actionButton) return;
     const action = actionButton.dataset.action;
     if (action === "open-habit") openHabitDialog();
+    if (action === "close-habit") $("#habitDialog").close();
     if (action === "edit-quote") editQuote();
     if (action === "open-menu") showToast("Меню поддержки можно заменить своими ссылками.");
     if (action === "open-premium") showToast("В этой версии всё бесплатно.");

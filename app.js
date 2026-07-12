@@ -89,6 +89,7 @@ function removeOldStarterHabit(habits) {
 }
 
 function saveState() {
+  if (state.feed.length > 50) state.feed = state.feed.slice(0, 50);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
@@ -103,7 +104,10 @@ function formatDate(date) {
 }
 
 function dateKey(date = new Date()) {
-  return date.toISOString().slice(0, 10);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function setupPickers() {
@@ -221,14 +225,16 @@ function renderHome() {
   const list = $("#habitList");
   list.innerHTML = "";
   const currentDay = today.getDay();
-  const todaysHabits = state.habits.filter(habit => habit.days.includes(currentDay));
   $("#emptyHome").classList.toggle("visible", state.habits.length === 0);
 
-  const habitsToShow = todaysHabits.length ? todaysHabits : state.habits;
+  const habitsToShow = [...state.habits].sort((a, b) =>
+    Number(b.days.includes(currentDay)) - Number(a.days.includes(currentDay))
+  );
   habitsToShow.forEach(habit => {
     const doneToday = isDoneToday(habit);
+    const isToday = habit.days.includes(currentDay);
     const card = document.createElement("article");
-    card.className = `habit-card ${doneToday ? "done-today" : ""}`;
+    card.className = `habit-card ${doneToday ? "done-today" : ""} ${isToday ? "" : "not-today"}`;
     card.style.setProperty("--habit-color", habit.color);
     card.innerHTML = `
       <div class="habit-top">
@@ -240,7 +246,7 @@ function renderHome() {
         </button>
       </div>
       <h2>${escapeHtml(habit.name)}</h2>
-      <p>${habit.days.map(day => dayNames[day]).join(", ") || "Каждый день"}</p>
+      <p>${habit.days.map(day => dayNames[day]).join(", ") || "Каждый день"}${isToday ? "" : " · не сегодня"}</p>
       <div class="habit-bottom">
         <div class="week-dashes">${weekOrder().map(day => `<span class="${weekDashClass(habit, day, doneToday)}"></span>`).join("")}</div>
         <div class="streak">🔥 ${habitStreak(habit)}</div>
@@ -757,7 +763,8 @@ function handleHabitSubmit(event) {
     name: $("#habitName").value.trim(),
     icon: $("#habitIcon").value,
     color: selectedColor,
-    days: selectedDays.length ? selectedDays : [0, 1, 2, 3, 4, 5, 6],
+    days: (selectedDays.length ? [...selectedDays] : [0, 1, 2, 3, 4, 5, 6])
+      .sort((a, b) => weekOrder().indexOf(a) - weekOrder().indexOf(b)),
     time: $("#habitTime").value,
     completions: existing?.completions || {},
     skips: existing?.skips || {},
@@ -794,13 +801,17 @@ function isDoneToday(habit) {
 
 function habitStreak(habit) {
   let streak = 0;
+  const todayKey = dateKey();
   const cursor = new Date();
   for (let i = 0; i < 365; i += 1) {
     const key = dateKey(cursor);
     const day = cursor.getDay();
     if (habit.days.includes(day)) {
-      if (habit.completions?.[key]) streak += 1;
-      else break;
+      if (habit.completions?.[key]) {
+        streak += 1;
+      } else if (key !== todayKey) {
+        break;
+      }
     }
     cursor.setDate(cursor.getDate() - 1);
   }

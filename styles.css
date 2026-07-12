@@ -251,6 +251,15 @@ h1 {
   text-shadow: 0 0 18px color-mix(in srgb, var(--habit-color) 50%, transparent);
 }
 
+.habit-card.not-today {
+  opacity: .55;
+}
+
+.habit-card.not-today .done-button {
+  pointer-events: none;
+  visibility: hidden;
+}
+
 .empty-state {
   display: none;
   padding: 30px 12px 0;
